@@ -21,7 +21,7 @@ def public_key_to_address(public_key):
     address = base58.b58encode(address_payload)
     return address.decode('utf-8')
 
-public_key_0 = b'\x00' # Public key of 0x00 (invalid public key)
+public_key_0 = b'\x04' + (b'\x00' * 32) + (b'\x00' * 32)  # Arbitrary Y value
 
 # Generate the Bitcoin address (which will be invalid)
 address = public_key_to_address(public_key_0)
