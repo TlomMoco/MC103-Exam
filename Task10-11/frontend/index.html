@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Token Swap</title>
+    <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+</head>
+<body>
+    <h2>Token Swap Interface</h2>
+    <button onclick="connectWallet()">Connect Wallet</button>
+    <br><br>
+
+    <h3>Swap A to B</h3>
+    <input type="text" id="amountA" placeholder="Enter amount of TokenA">
+    <button onclick="swapAtoB()">Swap A → B</button>
+
+    <h3>Swap B to A</h3>
+    <input type="text" id="amountB" placeholder="Enter amount of TokenB">
+    <button onclick="swapBtoA()">Swap B → A</button>
+
+    <script>
+        let provider, signer, swapContract;
+        const swapAddress = "0xa6596c464A302d9f31d9B3812Ccd64914D9951Fc";
+
+        async function connectWallet() {
+            provider = new ethers.providers.Web3Provider(window.ethereum);
+            await provider.send("eth_requestAccounts", []);
+            signer = provider.getSigner();
+            swapContract = new ethers.Contract(swapAddress, [
+                "function swapAtoB(uint256 amount) external",
+                "function swapBtoA(uint256 amount) external"
+            ], signer);
+            alert("Connected!");
+        }
+
+        async function swapAtoB() {
+            const amount = document.getElementById("amountA").value;
+            const tx = await swapContract.swapAtoB(ethers.utils.parseUnits(amount, 18));
+            await tx.wait();
+            alert("Swap Successful!");
+        }
+
+        async function swapBtoA() {
+            const amount = document.getElementById("amountB").value;
+            const tx = await swapContract.swapBtoA(ethers.utils.parseUnits(amount, 18));
+            await tx.wait();
+            alert("Swap Successful!");
+        }
+    </script>
+</body>
+</html>
