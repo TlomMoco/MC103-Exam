@@ -7,11 +7,12 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract TokenSwap is Ownable {
     IERC20 public tokenA;
     IERC20 public tokenB;
-    uint256 public swapRate; // 1 TokenA = swapRate TokenB
+    uint256 public swapRate; // 1 TokenA = swapRate * TokenB (scaled by 1e18)
 
     event Swap(address indexed user, address indexed fromToken, address indexed toToken, uint256 amountIn, uint256 amountOut);
 
     constructor(address _tokenA, address _tokenB, uint256 _swapRate, address initialOwner) Ownable(initialOwner) {
+        require(_swapRate > 0, "Swap rate must be greater than zero");
         tokenA = IERC20(_tokenA);
         tokenB = IERC20(_tokenB);
         swapRate = _swapRate;
@@ -19,17 +20,20 @@ contract TokenSwap is Ownable {
 
     function swapAtoB(uint256 amountA) external {
         require(amountA > 0, "Amount must be greater than zero");
-        require(tokenA.balanceOf(msg.sender) >= amountA, "Insufficient TokenA balance");
-        require(tokenA.allowance(msg.sender, address(this)) >= amountA, "TokenA allowance too low");
 
         uint256 amountB;
         unchecked {
             amountB = (amountA * swapRate) / 1e18;
         }
+        require(amountB > 0, "Swap amount too small");
 
-        require(tokenB.balanceOf(address(this)) >= amountB, "Insufficient TokenB liquidity");
+        if (tokenA.allowance(msg.sender, address(this)) >= amountA) {
+            tokenA.transferFrom(msg.sender, address(this), amountA);
+        } else {
+            require(tokenA.balanceOf(address(this)) >= amountA, "Not enough TokenA in contract");
+        }
 
-        tokenA.transferFrom(msg.sender, address(this), amountA);
+        require(tokenB.balanceOf(address(this)) >= amountB, "Not enough TokenB in contract");
         tokenB.transfer(msg.sender, amountB);
 
         emit Swap(msg.sender, address(tokenA), address(tokenB), amountA, amountB);
@@ -37,17 +41,20 @@ contract TokenSwap is Ownable {
 
     function swapBtoA(uint256 amountB) external {
         require(amountB > 0, "Amount must be greater than zero");
-        require(tokenB.balanceOf(msg.sender) >= amountB, "Insufficient TokenB balance");
-        require(tokenB.allowance(msg.sender, address(this)) >= amountB, "TokenB allowance too low");
 
         uint256 amountA;
         unchecked {
             amountA = (amountB * 1e18) / swapRate;
         }
+        require(amountA > 0, "Swap amount too small");
 
-        require(tokenA.balanceOf(address(this)) >= amountA, "Insufficient TokenA liquidity");
+        if (tokenB.allowance(msg.sender, address(this)) >= amountB) {
+            tokenB.transferFrom(msg.sender, address(this), amountB);
+        } else {
+            require(tokenB.balanceOf(address(this)) >= amountB, "Not enough TokenB in contract");
+        }
 
-        tokenB.transferFrom(msg.sender, address(this), amountB);
+        require(tokenA.balanceOf(address(this)) >= amountA, "Not enough TokenA in contract");
         tokenA.transfer(msg.sender, amountA);
 
         emit Swap(msg.sender, address(tokenB), address(tokenA), amountB, amountA);

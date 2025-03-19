@@ -3,47 +3,117 @@
 <head>
     <title>Token Swap</title>
     <script src="https://cdn.ethers.io/lib/ethers-5.2.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: auto;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        input {
+            width: 80%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .status {
+            font-weight: bold;
+            margin: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h2>Token Swap Interface</h2>
-    <button onclick="connectWallet()">Connect Wallet</button>
-    <br><br>
+    <div class="container">
+        <h2>Token Swap Interface</h2>
+        <button onclick="connectWallet()">Connect Wallet</button>
+        <p class="status" id="status">Not Connected</p>
+        <p id="balance">Balance: --</p>
 
-    <h3>Swap A to B</h3>
-    <input type="text" id="amountA" placeholder="Enter amount of TokenA">
-    <button onclick="swapAtoB()">Swap A → B</button>
+        <h3>Swap A to B</h3>
+        <input type="text" id="amountA" placeholder="Enter amount of TokenA">
+        <button onclick="swapAtoB()">Swap A → B</button>
 
-    <h3>Swap B to A</h3>
-    <input type="text" id="amountB" placeholder="Enter amount of TokenB">
-    <button onclick="swapBtoA()">Swap B → A</button>
+        <h3>Swap B to A</h3>
+        <input type="text" id="amountB" placeholder="Enter amount of TokenB">
+        <button onclick="swapBtoA()">Swap B → A</button>
+    </div>
 
     <script>
         let provider, signer, swapContract;
         const swapAddress = "0xa6596c464A302d9f31d9B3812Ccd64914D9951Fc";
+        const abi = [
+            "function swapAtoB(uint256 amount) external",
+            "function swapBtoA(uint256 amount) external",
+            "function balanceOf(address owner) view returns (uint256)"
+        ];
 
         async function connectWallet() {
-            provider = new ethers.providers.Web3Provider(window.ethereum);
-            await provider.send("eth_requestAccounts", []);
-            signer = provider.getSigner();
-            swapContract = new ethers.Contract(swapAddress, [
-                "function swapAtoB(uint256 amount) external",
-                "function swapBtoA(uint256 amount) external"
-            ], signer);
-            alert("Connected!");
+            try {
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                await provider.send("eth_requestAccounts", []);
+                signer = provider.getSigner();
+                swapContract = new ethers.Contract(swapAddress, abi, signer);
+                document.getElementById("status").innerText = "Connected";
+                updateBalances();
+            } catch (error) {
+                alert("Connection failed: " + error.message);
+            }
         }
 
         async function swapAtoB() {
-            const amount = document.getElementById("amountA").value;
-            const tx = await swapContract.swapAtoB(ethers.utils.parseUnits(amount, 18));
-            await tx.wait();
-            alert("Swap Successful!");
+            try {
+                const amount = document.getElementById("amountA").value;
+                const tx = await swapContract.swapAtoB(ethers.utils.parseUnits(amount, 18));
+                await tx.wait();
+                alert("Swap Successful!");
+                updateBalances();
+            } catch (error) {
+                alert("Swap failed: " + error.message);
+            }
         }
 
         async function swapBtoA() {
-            const amount = document.getElementById("amountB").value;
-            const tx = await swapContract.swapBtoA(ethers.utils.parseUnits(amount, 18));
-            await tx.wait();
-            alert("Swap Successful!");
+            try {
+                const amount = document.getElementById("amountB").value;
+                const tx = await swapContract.swapBtoA(ethers.utils.parseUnits(amount, 18));
+                await tx.wait();
+                alert("Swap Successful!");
+                updateBalances();
+            } catch (error) {
+                alert("Swap failed: " + error.message);
+            }
+        }
+
+        async function updateBalances() {
+            try {
+                const address = await signer.getAddress();
+                const balanceA = await swapContract.balanceOf(address);
+                document.getElementById("balance").innerText = "Balance: " + ethers.utils.formatUnits(balanceA, 18) + " Tokens";
+            } catch (error) {
+                console.error("Error fetching balance: ", error);
+            }
         }
     </script>
 </body>
