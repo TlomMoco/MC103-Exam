@@ -65,6 +65,10 @@ contract TokenSwap is Ownable {
         swapRate = newRate;
     }
 
+    function getSwapRate() public view returns (uint256) {
+        return swapRate;
+    }
+
     function depositTokenA(uint256 amount) external onlyOwner {
         tokenA.transferFrom(msg.sender, address(this), amount);
     }
