@@ -31,25 +31,3 @@ def caesar_cipher_decrypt(cipher):
 
 for item in cipher:    
     caesar_cipher_decrypt(item)
-
-
-
-
-"""
-def check_cipher_content(cipher):
-    has_upper = any(char.isupper() for char in cipher)
-    has_lower = any(char.islower() for char in cipher)
-    has_digit = any(char.isdigit() for char in cipher)
-
-    state = (has_upper, has_lower, has_digit)
-
-    alphabet_map = {
-        (True, False, False): string.ascii_uppercase,
-        (False, True, False): string.ascii_lowercase,
-        (False, False, True): string.digits,
-        (True, True, False): string.ascii_uppercase + string.ascii_lowercase,
-        (True, False, True): string.ascii_uppercase + string.digits,
-        (False, True, True): string.ascii_lowercase + string.digits,
-        (True, True, True): string.ascii_uppercase + string.ascii_lowercase + string.digits
-    }
-"""
