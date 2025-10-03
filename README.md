@@ -48,6 +48,7 @@ The work demonstrates applied skills in **cryptography, blockchain analysis, Eth
 
 ---
 
-## 🚀 Summary
+## Summary
 This project brings together theory and practice in **modern cryptography, blockchain security, Ethereum smart contracts, and decentralized storage systems**.  
 It showcases hands-on skills in breaking ciphers, handling cryptographic keys, analyzing blockchain data, deploying ERC-20 tokens, building an exchange contract, and publishing content to IPFS.
+
